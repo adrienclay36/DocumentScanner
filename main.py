@@ -397,6 +397,11 @@ class Ui_MainWindow(QWidget):
     # retranslateUi
 
     def uploadLicense(self):
+        '''
+        This function will open, resize, and read drivers license images
+        '''
+
+        
         # Open Filepath from system
         file, _ = QFileDialog.getOpenFileName(filter="Images (*.png *.jpg)")
         file_name = QUrl(file)
@@ -411,6 +416,7 @@ class Ui_MainWindow(QWidget):
             img.save(newFile)
 
             # Append filename to global variable to be cleaned up later
+
             CLEANUP_RESIZE.append(newFile)
 
             # Display Resized Image
@@ -431,8 +437,11 @@ class Ui_MainWindow(QWidget):
                 data = f.read()
 
             try:
+                # Begin the recognition process utilizing the Azure Form Recognizer AI
                 task = self.form_recognizer.begin_recognize_identity_documents(data)
                 form_result = task.result()
+
+                # Parse the extracted text to the appropriate fields
 
                 dl_number = form_result[0].fields['DocumentNumber'].value_data.text
                 first_name = form_result[0].fields['FirstName'].value_data.text
@@ -444,7 +453,6 @@ class Ui_MainWindow(QWidget):
                 expires = form_result[0].fields['DateOfExpiration'].value
             except:
                 print("Unable to extract")
-
             self.dlNumberText.setText(QCoreApplication.translate("MainWindow", dl_number, None))
             self.firstNameText.setText(first_name)
             self.lastNameText.setText(last_name)
@@ -461,9 +469,15 @@ class Ui_MainWindow(QWidget):
         return
 
     def finishedExtracting(self):
+        """
+        Simple message box to inform use that the extraction process is finished.
+        """
         QMessageBox.information(self, "Done!", "Finished Extracting")
 
     def uploadBusinessCard(self):
+        """
+        This function will extract information from a business card and return to user
+        """
         # Open Filepath from system
         file, _ = QFileDialog.getOpenFileName(filter="Images (*.png *.jpg)")
         file_name = QUrl(file)
@@ -504,14 +518,15 @@ class Ui_MainWindow(QWidget):
                 task = self.form_recognizer.begin_recognize_business_cards(data)
                 form_result = task.result()
 
-                # Parse fields
+                # Parse fields and assign to appropriate fields for return
 
                 merchant = str(form_result[0].fields['ContactNames'].value[0].value_data.text)
                 email = str(form_result[0].fields['Emails'].value[0].value_data.text)
                 phone = str(form_result[0].fields['OtherPhones'].value[0].value_data.text)
                 address = str(form_result[0].fields['Addresses'].value[0].value_data.text)
                 job_title = str(form_result[0].fields['JobTitles'].value[0].value_data.text)
-
+                    
+                # Set the text fields utilizing the information parsed from above.
                 self.merchantText.setText(merchant)
                 self.emailText.setText(email)
                 self.phoneText.setText(phone)
